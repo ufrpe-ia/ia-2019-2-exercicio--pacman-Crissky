@@ -17,6 +17,7 @@ Pacman agents (in searchAgents.py).
 
 import util
 from game import Directions
+#from searchAgents import manhattanHeuristic
 
 class SearchProblem:
     """
@@ -71,6 +72,45 @@ def tinyMazeSearch(problem):
     w = Directions.WEST
     return  [s, s, w, s, w, w, s, w]
 
+def nullHeuristic(state, problem=None):
+    """
+    A heuristic function estimates the cost from the current state to the nearest
+    goal in the provided SearchProblem.  This heuristic is trivial.
+    """
+    return 0
+
+def manhattanHeuristic(position, problem, info={}):
+    "The Manhattan distance heuristic for a PositionSearchProblem"
+    
+    xy1 = position
+    xy2 = problem.goal
+    return abs(xy1[0] - xy2[0]) + abs(xy1[1] - xy2[1])
+
+def genericPush(util_collection, item):
+    try:
+        util_collection.push(item, item['cost'])
+    except:
+        util_collection.push(item)
+
+def genericSearch(problem, fringe, heuristic=nullHeuristic):
+    visited = list()
+    first_state = problem.getStartState()
+    genericPush(fringe, {'state':first_state, 'path':list(), 'cost':0} )
+
+    while 1:
+        current_solution = fringe.pop()
+                
+        if( problem.isGoalState(current_solution['state']) ):
+            return current_solution['path']
+
+        for successor in problem.getSuccessors(current_solution['state']):
+            if(not successor[0] in visited):
+                new_state = successor[0]
+                new_path = current_solution['path'] + [ successor[1] ]
+                new_cost = current_solution['cost'] + successor[2] + heuristic(new_state, problem)
+                genericPush(fringe, {'state':new_state, 'path':new_path, 'cost':new_cost} )
+                visited.append(new_state)
+
 def depthFirstSearch(problem):
     """
     Search the deepest nodes in the search tree first.
@@ -86,6 +126,8 @@ def depthFirstSearch(problem):
     print "Start's successors:", problem.getSuccessors(problem.getStartState())
     """
     "*** YOUR CODE HERE ***"
+    return genericSearch(problem, util.Stack())
+
     util.raiseNotDefined()
 
 
@@ -95,6 +137,8 @@ def breadthFirstSearch(problem):
     DICA: Utilizar util.PriorityQueue
     *** YOUR CODE HERE ***
     """
+    return genericSearch(problem, util.Queue())
+    
     util.raiseNotDefined()
 
     
@@ -102,18 +146,15 @@ def uniformCostSearch(problem):
     """Search the node of least total cost first.
     *** YOUR CODE HERE ***
     """
+    return genericSearch(problem, util.PriorityQueue())
+    
     util.raiseNotDefined()
 
-def nullHeuristic(state, problem=None):
-    """
-    A heuristic function estimates the cost from the current state to the nearest
-    goal in the provided SearchProblem.  This heuristic is trivial.
-    """
-    return 0
-
-def aStarSearch(problem, heuristic=nullHeuristic):
+def aStarSearch(problem, heuristic=manhattanHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
     "*** YOUR CODE HERE ***"
+    return genericSearch(problem, util.PriorityQueue(), heuristic)
+
     util.raiseNotDefined()
 
 
